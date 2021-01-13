@@ -1,5 +1,6 @@
 import random
 import time
+import math
 
 '''
 show time complexity
@@ -97,12 +98,12 @@ def Selectionsort(array):
     if element == 1:
         return
 
-    for i in range(element):
+    for i in range(len(array)):
         mini_element = i
         for j in range(i + 1, len(array)):
             if array[mini_element] > array[j]:
                 mini_element = j
-            swap(array, i, mini_element)
+        array[i], array[mini_element] = array[mini_element], array[i]
 
 #heap sort
 def heapify(array, element, i):
@@ -163,7 +164,25 @@ def Combsort(array):
                 swapped_value = True
 
 #bucket sort
-'''
+def Bucketsort(array):
+    bucket = []
+
+    for i in range(len(array)):
+        bucket.append([])
+
+    for j in array:
+        index_bucket = 0
+        bucket[index_bucket].append(j) #IndexError: list index out of range
+
+    for i in range(len(array)):
+        bucket[i] = sorted(bucket[i])
+
+    k = 0
+    for i in range(len(array)):
+        for j in range(len(bucket[i])):
+            array[k] = bucket[i][j]
+            k += 1
+    return array
 
 '''
 def InsertionBucketsort(bucket):
@@ -187,6 +206,7 @@ def Bucketsort(array):
         #index_bucket = slot * j
         index_bucket = int(slot * j) #IndexError: list index out of range
         array[index_bucket].append(j)
+
     for i in range(slot):
         temp_array[i] = InsertionBucketsort(temp_array[i])
 
@@ -196,6 +216,7 @@ def Bucketsort(array):
             array[k] = temp_array[i][j]
             k += 1
     return array
+'''
 
 #counting sort
 def Countingsort(array):
@@ -218,9 +239,37 @@ def Countingsort(array):
     return array
 
 #radix sort
-def Radixsort(array):
-    pass
+def RadixCountingsort(array, exp1):
+    output = [0] * (element)
+    count = [0] * (10)
 
+    for i in range(0, element):
+        index = (array[i] / exp1)
+        count[int(index % 10)] += 1
+
+    for i in range(1, 10):
+        count[i] += count[i - 1]
+
+    i = element - 1
+    while i > 0:
+        index = (array[i] / exp1)
+        output[count[int(index % 10)] - 1] = array[i]
+        count[int(index % 10)] -= 1
+        i -= 1
+
+    i = 0
+    for i in range(0, len(array)):
+        array[i] = output[i]
+def Radixsort(array):
+    max1 = max(array)
+    exp = 1
+    while max1 / exp > 0:
+        RadixCountingsort(array, exp)
+        exp *= 10
+
+    return array
+
+#recursive bubble sort
 def RecursiveBubblesort(array, n):
     if n == 1:
         return
@@ -232,6 +281,48 @@ def RecursiveBubblesort(array, n):
     if n - 1 > 1:
         RecursiveBubblesort(array, n - 1)
     RecursiveBubblesort(array, n - 1)
+
+#LSD radix sort
+'''
+https://brilliant.org/wiki/radix-sort/#:~:text=Radix%20sort%20is%20an%20integer,sort%20an%20array%20of%20numbers.
+https://www.growingwiththeweb.com/sorting/radix-sort-lsd/
+'''
+def countingSortByDigit(array, radix, exponent, minValue):
+    bucketIndex = -1
+    buckets = [0] * radix
+    output = [None] * len(array)
+
+    for i in range(0, len(array)):
+        bucketIndex = math.floor(((array[i] - minValue) / exponent) % radix)
+        buckets[bucketIndex] += 1
+
+    for i in range(1, radix):
+        buckets[i] += buckets[i - 1]
+
+    for i in range(len(array) - 1, -1, -1):
+        bucketIndex = math.floor(((array[i] - minValue) / exponent) % radix)
+        buckets[bucketIndex] -= 1
+        output[buckets[bucketIndex]] = array[i]
+
+    return output
+def LSDRadixsort(array, radix = 10):
+    if len(array) == 0:
+        return array
+
+    minValue = array[0];
+    maxValue = array[0];
+    for i in range(1, len(array)):
+        if array[i] < minValue:
+            minValue = array[i]
+        elif array[i] > maxValue:
+            maxValue = array[i]
+
+    exponent = 1
+    while (maxValue - minValue) / exponent >= 1:
+        array = countingSortByDigit(array, radix, exponent, minValue)
+        exponent *= radix
+
+    return array
 
 run = True
 while run:
@@ -316,7 +407,7 @@ while run:
             print("\n")
             array = [423,5643,2345786,345,567,43,6,23,87,4,783,7]
             element = len(array)
-        elif remove(choice.lowewr()) == 'radix':
+        elif remove(choice.lower()) == 'radix':
             print("Unsorted array: ", array)
             Radixsort(array)
             print("Sorted array: ", array)
@@ -331,6 +422,13 @@ while run:
             print("\n")
             array = [423,5643,2345786,345,567,43,6,23,87,4,783,7]
             element = len(array)
+        elif remove(choice.lower()) == "lsdradix":
+            radix = 10
+            print("Unsorted array: ", array)
+            LSDRadixsort(array, radix)
+            print("Sorted array: ", array)
+            print("\n")
+            array = [423,5643,2345786,345,567,43,6,23,87,4,783,7]
         elif remove(choice.lower()) == "quit":
             run = False
             break
